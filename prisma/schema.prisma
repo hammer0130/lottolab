@@ -1,0 +1,64 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Draw {
+  drawNo    Int      @id
+  drawDate  DateTime
+  numbers   Int[]
+  bonus     Int
+  prizeJson Json?
+  source    String
+  verified  Boolean  @default(false)
+  createdAt DateTime @default(now())
+  results   Result[]
+}
+
+model Strategy {
+  id      String  @id
+  name    String
+  version Int     @default(1)
+  config  Json?
+  batches Batch[]
+}
+
+model Batch {
+  id         String   @id @default(cuid())
+  drawNo     Int
+  strategyId String
+  seed       Int
+  createdAt  DateTime @default(now())
+  strategy   Strategy @relation(fields: [strategyId], references: [id])
+  tickets    Ticket[]
+
+  @@unique([drawNo, strategyId])
+}
+
+model Ticket {
+  id         String  @id @default(cuid())
+  batchId    String
+  numbers    Int[]
+  gameIndex  Int
+  purchased  Boolean @default(false)
+  batch      Batch   @relation(fields: [batchId], references: [id])
+  result     Result?
+
+  @@unique([batchId, gameIndex])
+}
+
+model Result {
+  id          String  @id @default(cuid())
+  ticketId    String  @unique
+  drawNo      Int
+  matchCount  Int
+  bonusMatch  Boolean
+  rank        Int?
+  prizeAmount BigInt?
+  ticket      Ticket  @relation(fields: [ticketId], references: [id])
+  draw        Draw    @relation(fields: [drawNo], references: [drawNo])
+}

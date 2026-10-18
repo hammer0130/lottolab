@@ -1,0 +1,13 @@
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: lottolab
+      POSTGRES_PASSWORD: change_me
+      POSTGRES_DB: lottolab
+    ports:
+      - "5432:5432"
+    volumes:
+      - lotto_data:/var/lib/postgresql/data
+volumes:
+  lotto_data:
