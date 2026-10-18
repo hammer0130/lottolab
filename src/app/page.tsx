@@ -55,6 +55,13 @@ export default function Home() {
 
   const latest = draws[0];
   const peak = stat ? Math.max(...stat.frequency, 1) : 1;
+  const frequent = stat
+    ? stat.frequency
+        .map((count, index) => ({ number: index + 1, count }))
+        .sort((a, b) => b.count - a.count || a.number - b.number)
+        .slice(0, 6)
+    : [];
+  const frequentNumbers = new Set(frequent.map((item) => item.number));
   const quiet = stat
     ? stat.missing.map((gap, index) => ({ number: index + 1, gap })).sort((a, b) => b.gap - a.gap).slice(0, 8)
     : [];
@@ -136,12 +143,18 @@ export default function Home() {
         </div>
         <div className="chart">
           {stat?.frequency.map((count, index) => (
-            <div key={index} title={`${index + 1}번: ${count}회`}>
+            <div key={index} className={frequentNumbers.has(index + 1) ? 'hot' : undefined} title={`${index + 1}번: ${count}회`}>
               <div style={{ height: `${(count / peak) * 110}px` }} />
               <small>{index + 1}</small>
             </div>
           ))}
         </div>
+        {frequent.length > 0 ? (
+          <div className="quiet">
+            <span>많이 나온 번호</span>
+            {frequent.map((item) => <b key={item.number} className={`ball c${Math.ceil(item.number / 10)}`} title={`${item.count}회 출현`}>{item.number}</b>)}
+          </div>
+        ) : null}
         {quiet.length > 0 ? (
           <div className="quiet">
             <span>오래 나오지 않은 번호</span>
